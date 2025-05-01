@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section text-center py-5">
+    <h1 class="display-3 mb-4" style="color: var(--primary-red);">LEX ORION</h1>
+    <p class="lead mb-4">Advanced Legal Simulation Platform</p>
+    <button class="btn btn-primary btn-lg" onclick="createNewSession()">Start New Simulation</button>
+</div>
+
+<!-- Case Selection Section -->
+<div class="case-selection-section py-5">
+    <h2 class="text-center mb-4" style="color: var(--primary-red);">Select a Case to Simulate</h2>
+    <div class="row" id="case-selection">
+        <!-- Cases will be loaded here -->
+    </div>
+</div>
+
+<div class="features-section py-5">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">AI-Powered Proceedings</h5>
+                </div>
+                <div class="card-body">
+                    <p>Experience realistic court proceedings with advanced AI agents acting as judges, lawyers, and witnesses.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Dynamic Case Generation</h5>
+                </div>
+                <div class="card-body">
+                    <p>Each simulation features uniquely generated cases with complex legal scenarios and evidence.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Interactive Participation</h5>
+                </div>
+                <div class="card-body">
+                    <p>Engage in real-time with the proceedings, present evidence, and witness the judicial process unfold.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="active-sessions-section py-5">
+    <h2 class="text-center mb-4" style="color: var(--primary-red);">Active Sessions</h2>
+    <div id="active-sessions" class="row">
+        <!-- Active sessions will be loaded here -->
+    </div>
+</div>
+
+<div class="how-it-works-section py-5">
+    <h2 class="text-center mb-4" style="color: var(--primary-red);">How It Works</h2>
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">1. Create Session</h5>
+                </div>
+                <div class="card-body">
+                    <p>Start a new simulation session with automatically generated case details.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">2. Case Preparation</h5>
+                </div>
+                <div class="card-body">
+                    <p>Review case materials and prepare your strategy for the proceedings.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">3. Court Hearing</h5>
+                </div>
+                <div class="card-body">
+                    <p>Participate in the interactive court session with AI-powered legal participants.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">4. Judgment</h5>
+                </div>
+                <div class="card-body">
+                    <p>Receive the final judgment based on the proceedings and evidence presented.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const socket = io();
+
+// Load available cases
+function loadCases() {
+    fetch('/get_cases')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('case-selection');
+            container.innerHTML = data.cases.map(case_data => `
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">${case_data.title}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Case ID:</strong> ${case_data.case_id}</p>
+                            <p><strong>Type:</strong> ${case_data.case_type}</p>
+                            <p><strong>Description:</strong> ${case_data.description}</p>
+                            <p><strong>Parties:</strong><br>
+                                Plaintiff: ${case_data.parties.plaintiff}<br>
+                                Defendant: ${case_data.parties.defendant}
+                            </p>
+                            <button class="btn btn-primary" onclick="startCaseSimulation('${case_data.case_id}')">
+                                Start Simulation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(error => console.error('Error loading cases:', error));
+}
+
+function startCaseSimulation(caseId) {
+    fetch('/get_case/' + caseId)
+        .then(response => response.json())
+        .then(case_data => {
+            // Add all required fields for simulation
+            const simulation_data = {
+                case_id: case_data.case_id,
+                title: case_data.title,
+                case_type: case_data.case_type,
+                description: case_data.description,
+                parties: case_data.parties,
+                witnesses: case_data.witnesses || [],
+                evidence: case_data.evidence || [],
+                judge_data: {
+                    name: "Hon'ble Judge",
+                    court: "Civil Court",
+                    experience: 15,
+                    specialization: "Civil Law"
+                },
+                plaintiff_lawyer_data: {
+                    name: "Advocate Sharma",
+                    experience: 10,
+                    specialization: "Civil Law"
+                },
+                defendant_lawyer_data: {
+                    name: "Advocate Verma",
+                    experience: 12,
+                    specialization: "Civil Law"
+                },
+                courtroom_setup: {
+                    layout: "standard",
+                    participants: [
+                        {
+                            role: "judge",
+                            position: "center",
+                            animation: "sitting"
+                        },
+                        {
+                            role: "plaintiff_lawyer",
+                            position: "left",
+                            animation: "standing"
+                        },
+                        {
+                            role: "defendant_lawyer",
+                            position: "right",
+                            animation: "standing"
+                        }
+                    ]
+                }
+            };
+
+            fetch('/create_session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(simulation_data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.location.href = `/session/${data.session_id}`;
+            })
+            .catch(error => console.error('Error:', error));
+        })
+        .catch(error => console.error('Error loading case:', error));
+}
+
+// Load cases when the page loads
+document.addEventListener('DOMContentLoaded', loadCases);
+
+function createNewSession() {
+    // Generate case data
+    const case_data = {
+        case_type: "Civil Dispute",
+        case_id: `CASE-${Date.now()}`,
+        judge_data: {
+            name: "Hon'ble Judge",
+            court: "Civil Court",
+            experience: 15,
+            specialization: "Civil Law"
+        },
+        plaintiff_lawyer_data: {
+            name: "Advocate Sharma",
+            experience: 10,
+            specialization: "Civil Law"
+        },
+        defendant_lawyer_data: {
+            name: "Advocate Verma",
+            experience: 12,
+            specialization: "Civil Law"
+        },
+        witnesses: [
+            {
+                witness_id: "WIT-001",
+                name: "Mr. Rajesh Kumar",
+                role: "Plaintiff",
+                testimony: "I am the plaintiff in this case"
+            },
+            {
+                witness_id: "WIT-002",
+                name: "Mr. Amit Singh",
+                role: "Defendant",
+                testimony: "I am the defendant in this case"
+            }
+        ],
+        evidence: [
+            {
+                id: "EVD-001",
+                type: "Document",
+                description: "Contract Agreement",
+                relevance: "Primary evidence of the agreement"
+            }
+        ]
+    };
+
+    fetch('/create_session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(case_data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        window.location.href = `/session/${data.session_id}`;
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function loadActiveSessions() {
+    // Sample data structure for active sessions
+    const sessions = [
+        {
+            id: 'SESSION-20240427001',
+            case_type: 'Civil Dispute',
+            status: 'In Progress',
+            created_at: '2024-04-27 10:00 AM'
+        }
+    ];
+
+    const container = document.getElementById('active-sessions');
+    container.innerHTML = sessions.map(session => `
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Case ID: ${session.id}</h5>
+                </div>
+                <div class="card-body">
+                    <p>Type: ${session.case_type}</p>
+                    <p>Status: ${session.status}</p>
+                    <p>Created: ${session.created_at}</p>
+                    <a href="/session/${session.id}" class="btn btn-primary">View Session</a>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Load active sessions when the page loads
+document.addEventListener('DOMContentLoaded', loadActiveSessions);
+
+// Update sessions when receiving updates
+socket.on('session_update', function(data) {
+    loadActiveSessions();
+});
+</script>
+{% endblock %} 

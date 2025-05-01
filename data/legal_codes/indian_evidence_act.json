@@ -1,0 +1,37 @@
+{
+    "name": "Indian Evidence Act, 1872",
+    "sections": [
+        {
+            "number": "3",
+            "text": "Evidence means and includes: (1) all statements which the Court permits or requires to be made before it by witnesses, in relation to matters of fact under inquiry; such statements are called oral evidence; (2) all documents including electronic records produced for the inspection of the Court; such documents are called documentary evidence."
+        },
+        {
+            "number": "59",
+            "text": "All facts, except the contents of documents or electronic records, may be proved by oral evidence."
+        },
+        {
+            "number": "60",
+            "text": "Oral evidence must, in all cases whatever, be direct; that is to say if it refers to a fact which could be seen, it must be the evidence of a witness who says he saw it; if it refers to a fact which could be heard, it must be the evidence of a witness who says he heard it; if it refers to a fact which could be perceived by any other sense or in any other manner, it must be the evidence of a witness who says he perceived it by that sense or in that manner."
+        },
+        {
+            "number": "65B",
+            "text": "Any information contained in an electronic record which is printed on a paper, stored, recorded or copied in optical or magnetic media produced by a computer shall be deemed to be also a document, if the conditions mentioned in this section are satisfied in relation to the information and computer in question."
+        },
+        {
+            "number": 24,
+            "text": "A confession made by an accused person is irrelevant in a criminal proceeding, if the making of the confession appears to the Court to have been caused by any inducement, threat or promise."
+        },
+        {
+            "number": 45,
+            "text": "When the Court has to form an opinion upon a point of foreign law or of science or art, or as to identity of handwriting or finger impressions, the opinions upon that point of persons specially skilled in such foreign law, science or art, or in questions as to identity of handwriting or finger impressions are relevant facts."
+        },
+        {
+            "number": 141,
+            "text": "Leading questions must not, if objected to by the adverse party, be asked in examination-in-chief, or in re-examination, except with the permission of the Court."
+        },
+        {
+            "number": 146,
+            "text": "When a witness is cross-examined, he may, in addition to the questions hereinbefore referred to, be asked any questions which tend— (1) to test his veracity, (2) to discover who he is and what is his position in life, or (3) to shake his credit, by injuring his character, although the answer to such questions might tend directly or indirectly to criminate him or might expose or tend directly or indirectly to expose him to a penalty or forfeiture."
+        }
+    ]
+} 

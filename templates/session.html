@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: 500px;
+        overflow-y: auto;
+        background-color: var(--dark-black);
+        border: 1px solid var(--primary-red);
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 4px;
+        border-left: 4px solid var(--primary-red);
+    }
+
+    .message.judge {
+        background-color: rgba(227, 24, 55, 0.1);
+    }
+
+    .message.lawyer {
+        background-color: rgba(255, 31, 31, 0.1);
+    }
+
+    .message.witness {
+        background-color: rgba(245, 245, 245, 0.1);
+    }
+
+    .phase-indicator {
+        background-color: var(--primary-red);
+        color: var(--light-gray);
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .evidence-container {
+        background-color: var(--dark-black);
+        border: 1px solid var(--primary-red);
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .evidence-item {
+        background-color: rgba(227, 24, 55, 0.1);
+        border: 1px solid var(--primary-red);
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .participant-card {
+        background-color: var(--dark-black);
+        border: 1px solid var(--primary-red);
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .participant-card h5 {
+        color: var(--primary-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .action-buttons .btn {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .transcript-container {
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .transcript-entry {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    .transcript-entry.judge {
+        background-color: #f8f9fa;
+    }
+
+    .transcript-entry.plaintiff {
+        background-color: #e3f2fd;
+    }
+
+    .transcript-entry.defendant {
+        background-color: #fff3e0;
+    }
+
+    .transcript-entry.witness {
+        background-color: #f1f8e9;
+    }
+
+    .evidence-item {
+        margin-bottom: 10px;
+        padding: 5px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+
+    #courtroom-animation {
+        min-height: 400px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .participant {
+        position: absolute;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .participant .participant-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        border: 3px solid #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .participant .participant-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .participant .participant-name {
+        margin-top: 10px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .participant.active {
+        transform: scale(1.1);
+    }
+
+    .participant.active .participant-avatar {
+        border-color: var(--primary-red);
+        box-shadow: 0 0 15px rgba(227, 24, 55, 0.5);
+    }
+
+    .participant.judge {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .participant.plaintiff_lawyer {
+        bottom: 20px;
+        left: 30%;
+    }
+
+    .participant.defendant_lawyer {
+        bottom: 20px;
+        right: 30%;
+    }
+
+    .witness-item {
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .witness-item button {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Panel: Courtroom Animation -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Courtroom</h5>
+                </div>
+                <div class="card-body">
+                    <div id="courtroom-animation" class="text-center">
+                        <!-- SVG animation will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Controls and Information -->
+        <div class="col-md-4">
+            <!-- Case Information -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Case Information</h5>
+                </div>
+                <div class="card-body">
+                    <div id="case-info">
+                        <!-- Case details will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Controls</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button id="start-hearing" class="btn btn-primary">Start Hearing</button>
+                        <button id="end-hearing" class="btn btn-danger">End Hearing</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evidence Panel -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Evidence</h5>
+                </div>
+                <div class="card-body">
+                    <div id="evidence-list">
+                        <!-- Evidence items will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Witness Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Witnesses</h5>
+                </div>
+                <div class="card-body">
+                    <div id="witness-list">
+                        <!-- Witness list will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transcript Panel -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Transcript</h5>
+                </div>
+                <div class="card-body">
+                    <div id="transcript" class="transcript-container">
+                        <!-- Transcript entries will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Voice Command Modal -->
+<div class="modal fade" id="voiceCommandModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Voice Command</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="voiceCommand">Speak your command:</label>
+                    <input type="text" class="form-control" id="voiceCommand">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitVoiceCommand">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    // Debug connection
+    console.log('Initializing Socket.IO connection...');
+    
+    // Get session ID from template
+    const sessionId = "{{ session_id }}";
+    console.log('Session ID from template:', sessionId);
+    
+    if (!sessionId) {
+        console.error('No session ID found in template');
+        showError('No session ID found. Please start a new simulation.');
+    }
+
+    // Initialize Socket.IO with reconnection options
+    const socket = io({
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+        autoConnect: true,
+        transports: ['websocket', 'polling'],
+        forceNew: true,
+        path: '/socket.io',
+        query: {
+            session_id: sessionId
+        }
+    });
+
+    // Initialize components
+    let courtroomState = {
+        animation: null,
+        transcript: [],
+        current_phase: "pre_trial",
+        active_speaker: null,
+        objections: [],
+        evidence_presented: [],
+        case_info: null
+    };
+
+    // Socket event handlers
+    socket.on('connect', () => {
+        console.log('Connected to server with ID:', socket.id);
+        // Request initial state
+        console.log('Requesting initial state for session:', sessionId);
+        socket.emit('start_simulation', { session_id: sessionId });
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('Connection error:', error);
+        showError('Failed to connect to server. Please refresh the page.');
+    });
+
+    socket.on('disconnect', (reason) => {
+        console.log('Disconnected:', reason);
+        if (reason === 'io server disconnect') {
+            console.log('Server initiated disconnect, attempting to reconnect...');
+            socket.connect();
+        }
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+        console.log('Reconnected after', attemptNumber, 'attempts');
+        // Request initial state again after reconnection
+        socket.emit('start_simulation', { session_id: sessionId });
+    });
+
+    socket.on('reconnect_error', (error) => {
+        console.error('Reconnection error:', error);
+    });
+
+    socket.on('reconnect_failed', () => {
+        console.error('Failed to reconnect after maximum attempts');
+        showError('Failed to reconnect to server. Please refresh the page.');
+    });
+
+    socket.on('status', (data) => {
+        console.log('Status update:', data);
+        if (data.status === 'connected') {
+            console.log('Successfully connected to server');
+        }
+    });
+
+    socket.on('pong', (data) => {
+        console.log('Pong received:', data);
+    });
+
+    socket.on('simulation_state', (data) => {
+        console.log('Received simulation state:', data);
+        if (data.status === 'error') {
+            console.error('Error in simulation state:', data.error);
+            showError(data.error);
+            return;
+        }
+        updateCourtroomState(data);
+        updateUI();
+    });
+
+    socket.on('error', (data) => {
+        console.error('Error received:', data);
+        showError(data.message);
+        // Re-enable start button if it was disabled
+        const startButton = document.getElementById('start-hearing');
+        if (startButton) {
+            startButton.disabled = false;
+            startButton.textContent = 'Start Hearing';
+        }
+    });
+
+    // Keep connection alive
+    const pingInterval = setInterval(() => {
+        if (socket.connected) {
+            console.log('Sending ping...');
+            socket.emit('ping', { timestamp: Date.now() });
+        } else {
+            console.log('Socket not connected, clearing ping interval');
+            clearInterval(pingInterval);
+        }
+    }, 25000);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        clearInterval(pingInterval);
+        if (socket.connected) {
+            socket.disconnect();
+        }
+    });
+
+    // UI Update functions
+    function updateCourtroomState(newState) {
+        console.log('Updating courtroom state with:', newState);
+        courtroomState = { ...courtroomState, ...newState };
+    }
+
+    function updateUI() {
+        console.log('Updating UI with state:', courtroomState);
+        
+        // Update case information
+        if (courtroomState.case_info) {
+            const caseInfoContainer = document.getElementById('case-info');
+            caseInfoContainer.innerHTML = `
+                <h6>Case Details</h6>
+                <p><strong>Case ID:</strong> ${courtroomState.case_info.case_id}</p>
+                <p><strong>Title:</strong> ${courtroomState.case_info.title}</p>
+                <p><strong>Type:</strong> ${courtroomState.case_info.case_type}</p>
+                <p><strong>Parties:</strong><br>
+                    Plaintiff: ${courtroomState.case_info.parties.plaintiff}<br>
+                    Defendant: ${courtroomState.case_info.parties.defendant}
+                </p>
+            `;
+        }
+
+        // Update courtroom animation
+        const animationContainer = document.getElementById('courtroom-animation');
+        if (courtroomState.animation) {
+            animationContainer.innerHTML = courtroomState.animation;
+            
+            // Add participant positions if available
+            if (courtroomState.participants) {
+                courtroomState.participants.forEach(participant => {
+                    const element = document.createElement('div');
+                    element.className = `participant ${participant.role}`;
+                    element.style.position = 'absolute';
+                    element.style[participant.position] = '50px';
+                    element.innerHTML = `
+                        <div class="participant-avatar">
+                            <img src="/static/images/${participant.role}.png" alt="${participant.role}">
+                        </div>
+                        <div class="participant-name">${participant.name}</div>
+                    `;
+                    animationContainer.appendChild(element);
+                });
+            }
+        }
+
+        // Update transcript
+        const transcriptContainer = document.getElementById('transcript');
+        if (courtroomState.transcript && courtroomState.transcript.length > 0) {
+            transcriptContainer.innerHTML = courtroomState.transcript
+                .map(entry => `
+                    <div class="transcript-entry ${entry.speaker.toLowerCase()}">
+                        <strong>${entry.speaker}:</strong> ${entry.content}
+                        <small class="text-muted">${new Date(entry.timestamp).toLocaleTimeString()}</small>
+                    </div>
+                `)
+                .join('');
+        } else {
+            transcriptContainer.innerHTML = '<p>No transcript entries yet</p>';
+        }
+
+        // Update evidence list
+        const evidenceList = document.getElementById('evidence-list');
+        if (courtroomState.evidence_presented && courtroomState.evidence_presented.length > 0) {
+            evidenceList.innerHTML = courtroomState.evidence_presented
+                .map(evidence => `
+                    <div class="evidence-item">
+                        <strong>${evidence.evidence.id}:</strong> ${evidence.evidence.description}
+                        <small class="text-muted">Presented by: ${evidence.presented_by}</small>
+                    </div>
+                `)
+                .join('');
+        } else {
+            evidenceList.innerHTML = '<p>No evidence presented yet</p>';
+        }
+
+        // Update witness list
+        const witnessList = document.getElementById('witness-list');
+        if (courtroomState.case_info && courtroomState.case_info.witnesses) {
+            witnessList.innerHTML = courtroomState.case_info.witnesses
+                .map(witness => `
+                    <div class="witness-item">
+                        <strong>${witness.name}</strong>
+                        <p>Role: ${witness.role}</p>
+                        <button class="btn btn-sm btn-primary" onclick="examineWitness('${witness.witness_id}')">
+                            Examine
+                        </button>
+                    </div>
+                `)
+                .join('');
+        } else {
+            witnessList.innerHTML = '<p>No witnesses available</p>';
+        }
+
+        // Update active speaker
+        if (courtroomState.active_speaker) {
+            console.log('Active speaker:', courtroomState.active_speaker);
+            // Highlight active speaker in animation
+            document.querySelectorAll('.participant').forEach(el => {
+                el.classList.remove('active');
+                if (el.classList.contains(courtroomState.active_speaker.toLowerCase())) {
+                    el.classList.add('active');
+                }
+            });
+        }
+    }
+
+    function examineWitness(witnessId) {
+        console.log('Examining witness:', witnessId);
+        socket.emit('examine_witness', {
+            session_id: sessionId,
+            witness_id: witnessId
+        });
+    }
+
+    function presentEvidence(evidenceId) {
+        console.log('Presenting evidence:', evidenceId);
+        socket.emit('present_evidence', {
+            session_id: sessionId,
+            evidence_id: evidenceId
+        });
+    }
+
+    function raiseObjection(type) {
+        console.log('Raising objection:', type);
+        socket.emit('raise_objection', {
+            session_id: sessionId,
+            type: type
+        });
+    }
+
+    function showError(message) {
+        console.error('Error:', message);
+        alert(`Error: ${message}`);
+    }
+
+    // Event listeners
+    document.getElementById('start-hearing').addEventListener('click', () => {
+        console.log('Start hearing button clicked');
+        console.log('Current session ID:', sessionId);
+        
+        if (!sessionId) {
+            console.error('No session ID found');
+            showError('No session ID found. Please start a new simulation.');
+            return;
+        }
+
+        console.log('Emitting start_simulation event with data:', { session_id: sessionId });
+        
+        // Show loading state
+        const startButton = document.getElementById('start-hearing');
+        startButton.disabled = true;
+        startButton.textContent = 'Starting...';
+        
+        // Emit the event
+        socket.emit('start_simulation', { 
+            session_id: sessionId 
+        });
+
+        // Add timeout to re-enable button if no response
+        setTimeout(() => {
+            if (startButton.disabled) {
+                console.warn('No response from server after 5 seconds');
+                startButton.disabled = false;
+                startButton.textContent = 'Start Hearing';
+                showError('No response from server. Please try again.');
+            }
+        }, 5000);
+    });
+
+    document.getElementById('end-hearing').addEventListener('click', () => {
+        console.log('Ending hearing...');
+        socket.emit('end_simulation', { session_id: sessionId });
+    });
+
+    document.getElementById('submitVoiceCommand').addEventListener('click', () => {
+        const command = document.getElementById('voiceCommand').value;
+        console.log('Processing voice command:', command);
+        socket.emit('voice_command', {
+            session_id: sessionId,
+            command: command
+        });
+        bootstrap.Modal.getInstance(document.getElementById('voiceCommandModal')).hide();
+    });
+
+    // Initialize voice command button
+    document.querySelectorAll('.voice-command-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
+            modal.show();
+        });
+    });
+</script>
+{% endblock %} 

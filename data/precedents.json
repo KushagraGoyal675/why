@@ -1,0 +1,41 @@
+[
+    {
+        "id": "PREC-001",
+        "title": "Hadley v. Baxendale",
+        "case_type": "Contract Dispute",
+        "year": 1854,
+        "court": "Court of Exchequer",
+        "summary": "Established the rule for damages in contract cases - damages must be reasonably foreseeable",
+        "principles": [
+            "Damages must be reasonably foreseeable",
+            "Parties must communicate special circumstances",
+            "Damages must arise naturally from breach"
+        ]
+    },
+    {
+        "id": "PREC-002",
+        "title": "Carlill v. Carbolic Smoke Ball Co.",
+        "case_type": "Contract Dispute",
+        "year": 1893,
+        "court": "Court of Appeal",
+        "summary": "Established that advertisements can constitute binding unilateral offers",
+        "principles": [
+            "Advertisements can be binding offers",
+            "Performance of conditions constitutes acceptance",
+            "Consideration can be found in performance"
+        ]
+    },
+    {
+        "id": "PREC-003",
+        "title": "Donoghue v. Stevenson",
+        "case_type": "Tort",
+        "year": 1932,
+        "court": "House of Lords",
+        "summary": "Established the modern concept of negligence",
+        "principles": [
+            "Duty of care exists between manufacturer and consumer",
+            "Foreseeability of harm is key",
+            "Proximity between parties must exist"
+        ]
+    }
+] 

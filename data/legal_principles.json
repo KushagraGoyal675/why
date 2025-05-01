@@ -1,0 +1,43 @@
+{
+    "principles": [
+        {
+            "id": "P1",
+            "title": "Contract Formation",
+            "description": "The essential elements required for a valid contract under Indian Contract Law",
+            "keywords": ["offer", "acceptance", "consideration", "capacity", "consent"],
+            "key_principles": [
+                "Offer and acceptance must be clear and unambiguous",
+                "There must be lawful consideration (something of value exchanged)",
+                "Parties must have the capacity to contract",
+                "Free consent is essential (no coercion, undue influence, fraud, misrepresentation)",
+                "The object and consideration must be lawful"
+            ]
+        },
+        {
+            "id": "P2",
+            "title": "Breach of Contract",
+            "description": "Principles governing breach of contract and available remedies",
+            "keywords": ["damages", "specific performance", "breach", "remedies", "compensation"],
+            "key_principles": [
+                "Actual breach occurs when a party fails to perform their obligations",
+                "Anticipatory breach occurs when a party indicates they will not perform",
+                "Damages aim to put the injured party in the position they would have been in had the contract been performed",
+                "Specific performance may be ordered when damages are inadequate",
+                "The injured party has a duty to mitigate their losses"
+            ]
+        },
+        {
+            "id": "P3",
+            "title": "Negligence",
+            "description": "Fundamental principles of negligence in civil law",
+            "keywords": ["duty of care", "breach", "causation", "damages", "liability"],
+            "key_principles": [
+                "A duty of care must exist between the parties",
+                "The duty must have been breached by falling below the standard of care",
+                "The breach must have caused actual damage or loss",
+                "The damage must have been reasonably foreseeable",
+                "The plaintiff must prove all elements on a balance of probabilities"
+            ]
+        }
+    ]
+} 

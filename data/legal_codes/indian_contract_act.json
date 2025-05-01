@@ -1,0 +1,21 @@
+{
+    "name": "Indian Contract Act, 1872",
+    "sections": [
+        {
+            "number": "2(h)",
+            "text": "An agreement enforceable by law is a contract."
+        },
+        {
+            "number": "10",
+            "text": "All agreements are contracts if they are made by the free consent of parties competent to contract, for a lawful consideration and with a lawful object, and are not hereby expressly declared to be void."
+        },
+        {
+            "number": "73",
+            "text": "When a contract has been broken, the party who suffers by such breach is entitled to receive, from the party who has broken the contract, compensation for any loss or damage caused to him thereby, which naturally arose in the usual course of things from such breach, or which the parties knew, when they made the contract, to be likely to result from the breach of it."
+        },
+        {
+            "number": "74",
+            "text": "When a contract has been broken, if a sum is named in the contract as the amount to be paid in case of such breach, or if the contract contains any other stipulation by way of penalty, the party complaining of the breach is entitled, whether or not actual damage or loss is proved to have been caused thereby, to receive from the party who has broken the contract reasonable compensation not exceeding the amount so named or, as the case may be, the penalty stipulated for."
+        }
+    ]
+} 
