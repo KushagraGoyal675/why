@@ -20,13 +20,97 @@ from agents.judge_agent import JudgeAgent
 from agents.witness_agent import WitnessAgent
 from utils.tts import TTSEngine
 from utils.stt import STTEngine
+from io import StringIO
 
 # Must be called before any other Streamlit commands
 st.set_page_config(
     page_title="Lex Orion - Indian Court Simulator",
     page_icon=None,  # We'll update this once we have the logo
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"  # Sidebar always open
 )
+
+# --- SIDEBAR CONTROLS (ALWAYS VISIBLE) ---
+st.sidebar.header("Simulation Controls")
+
+# Audio On/Off toggle
+if 'audio_on' not in st.session_state:
+    st.session_state['audio_on'] = True
+st.session_state['audio_on'] = st.sidebar.checkbox("🔊 Audio On/Off", value=st.session_state['audio_on'])
+
+# Progress bar
+phases = [
+    'opening',
+    'examination_in_chief',
+    'cross_examination',
+    'evidence',
+    'objection',
+    'closing',
+    'judgment',
+    'completed'
+]
+current_phase = st.session_state.get('current_phase', 'opening')
+progress = phases.index(current_phase) / (len(phases)-1)
+st.sidebar.progress(progress, text=f"Phase: {current_phase.replace('_', ' ').title()}")
+
+# Back/Undo button
+if st.sidebar.button("⬅️ Back/Undo", help="Go back to the previous phase or action"):
+    if 'history' in st.session_state and st.session_state['history']:
+        last_state = st.session_state['history'].pop()
+        for k, v in last_state.items():
+            st.session_state[k] = v
+        st.rerun()
+    else:
+        st.sidebar.warning("No previous state to undo.")
+
+# End Simulation button with checkbox confirmation
+if st.sidebar.button("🛑 End Simulation", help="End the current simulation and return to main menu"):
+    st.session_state.show_end_confirm = True
+if st.session_state.get("show_end_confirm", False):
+    if st.sidebar.checkbox("Are you sure you want to end the simulation? This cannot be undone."):
+        for key in [
+            'simulation', 'simulation_state', 'transcript', 'current_phase', 'evidence_presented',
+            'selected_witness', 'current_speaker', 'opening_done', 'examination_done', 'cross_done',
+            'evidence_done', 'objection_done', 'closing_done', 'judgment_done', 'selected_case_id', 'selected_role', 'history']:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.session_state.show_end_confirm = False
+        st.rerun()
+
+# Restart Simulation button with checkbox confirmation
+if st.sidebar.button("🔄 Restart Simulation", help="Restart the current case from the beginning"):
+    st.session_state.show_restart_confirm = True
+if st.session_state.get("show_restart_confirm", False):
+    if st.sidebar.checkbox("Are you sure you want to restart? All progress will be lost."):
+        for key in [
+            'simulation', 'simulation_state', 'transcript', 'current_phase', 'evidence_presented',
+            'selected_witness', 'current_speaker', 'opening_done', 'examination_done', 'cross_done',
+            'evidence_done', 'objection_done', 'closing_done', 'judgment_done', 'history']:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.session_state.show_restart_confirm = False
+        st.rerun()
+
+# Download Transcript button
+if 'transcript' in st.session_state and st.session_state['transcript']:
+    transcript_text = '\n'.join([f"{entry['speaker']}: {entry['content']}" for entry in st.session_state['transcript']])
+    st.sidebar.download_button(
+        label="⬇️ Download Transcript",
+        data=transcript_text,
+        file_name="courtroom_transcript.txt",
+        mime="text/plain"
+    )
+
+# --- HISTORY TRACKING FOR UNDO ---
+def save_history():
+    if 'history' not in st.session_state:
+        st.session_state['history'] = []
+    # Save a shallow copy of relevant state
+    state_snapshot = {k: v for k, v in st.session_state.items() if k in [
+        'simulation', 'simulation_state', 'transcript', 'current_phase', 'evidence_presented',
+        'selected_witness', 'current_speaker', 'opening_done', 'examination_done', 'cross_done',
+        'evidence_done', 'objection_done', 'closing_done', 'judgment_done', 'selected_case_id', 'selected_role']}
+    st.session_state['history'].append(state_snapshot)
 
 # Display the logo using Streamlit's native st.image for debugging
 st.image("logo.png", width=120)
@@ -59,6 +143,9 @@ tts_voices = {
 }
 
 def play_tts(role, text):
+    if not st.session_state.get('audio_on', True):
+        print("Audio is OFF. Skipping TTS.")
+        return False
     try:
         if not text or not isinstance(text, str):
             print(f"Invalid text for TTS: {text}")
