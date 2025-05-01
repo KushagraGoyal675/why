@@ -1,0 +1,1 @@
+{"id": "sample_case_1", "title": "Sample Case: Contract Dispute", "description": "A dispute over a breached service contract between two companies.", "case_type": "Civil", "parties": {"plaintiff": "Tech Solutions Inc.", "defendant": "Global Services Ltd."}, "witnesses": ["John Smith", "Sarah Johnson"], "evidence": ["Contract Document", "Email Correspondence", "Payment Records"]}

@@ -1,69 +1,74 @@
 import streamlit as st
-from typing import Dict, Any
 from .components import CourtroomUI
-from .animations import CourtroomAnimation
-from .proceeding_animations import CourtroomProceedingAnimation
+from .animations import AnimationManager
+from .proceeding_animations import CourtProceedingAnimations
+from typing import Dict, Any
 
 class CourtroomFrontend:
     def __init__(self):
         self.ui = CourtroomUI()
-        self.animation = CourtroomAnimation()
-        self.proceeding_animation = CourtroomProceedingAnimation()
-        
+        self.animations = AnimationManager()
+        self.proceeding_animations = CourtProceedingAnimations()
+    
     def setup_page(self):
-        """Setup the main page layout and configuration"""
-        self.ui.setup_page_config()
+        """Setup the page styling"""
         self.ui.inject_custom_css()
-        
+    
     def display_courtroom(self, simulation_state: Dict[str, Any]):
         """Display the main courtroom interface"""
-        # Create two columns for the layout
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            # Display the courtroom animation
-            self.animation.animate_phase(simulation_state.get('phase', 'opening'))
-            
-        with col2:
-            # Display the transcript
-            self.ui.display_transcript(
-                simulation_state.get('transcript', []),
-                simulation_state.get('role', 'Judge')
-            )
-            
+        # Display the transcript
+        self.ui.display_transcript(
+            simulation_state.get('transcript', []),
+            simulation_state.get('selected_role', '')
+        )
+    
     def display_phase_interface(self, phase: str, role: str):
         """Display the interface for the current phase"""
-        self.proceeding_animation.animate_phase(phase, role)
-        
         if phase == 'opening':
             self.ui.display_opening_statement_form(role)
-        elif phase == 'examination':
-            self.ui.display_witness_examination_form(role)
-        elif phase == 'evidence':
-            self.ui.display_evidence_form(role)
-        elif phase == 'objection':
-            self.ui.display_objection_form(role)
-        elif phase == 'closing':
-            self.ui.display_closing_argument_form(role)
-        elif phase == 'judgment':
-            self.ui.display_judgment_form(role)
-            
+        # Add other phase interfaces here
+    
     def display_phase_indicator(self, current_phase: str):
         """Display the current phase indicator"""
-        self.ui.display_phase_indicator(current_phase)
-        
+        phases = [
+            'opening',
+            'examination',
+            'evidence',
+            'objection',
+            'closing',
+            'judgment',
+            'completed'
+        ]
+        self.ui.display_phase_indicator(current_phase, phases)
+    
     def display_error(self, error_message: str):
         """Display an error message"""
-        st.error(error_message)
-        
-    def display_success(self, success_message: str):
+        self.animations.flash_message(error_message, style="error")
+    
+    def display_success(self, message: str):
         """Display a success message"""
-        st.success(success_message)
-        
-    def display_warning(self, warning_message: str):
+        self.animations.flash_message(message, style="success")
+    
+    def display_warning(self, message: str):
         """Display a warning message"""
-        st.warning(warning_message)
-        
-    def display_info(self, info_message: str):
-        """Display an info message"""
-        st.info(info_message) 
+        self.animations.flash_message(message, style="warning")
+    
+    def animate_phase_transition(self, from_phase: str, to_phase: str):
+        """Animate the transition between phases"""
+        self.proceeding_animations.phase_transition_animation(from_phase, to_phase)
+    
+    def animate_evidence_presentation(self, evidence_type: str):
+        """Animate evidence presentation"""
+        self.proceeding_animations.evidence_presentation_animation(evidence_type)
+    
+    def animate_objection(self, objection_type: str):
+        """Animate an objection"""
+        self.proceeding_animations.objection_animation(objection_type)
+    
+    def animate_verdict(self, verdict: str):
+        """Animate the verdict"""
+        self.proceeding_animations.verdict_animation(verdict)
+    
+    def animate_witness_transition(self, witness_name: str):
+        """Animate witness transition"""
+        self.proceeding_animations.witness_transition_animation(witness_name) 

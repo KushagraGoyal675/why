@@ -1,135 +1,131 @@
 import streamlit as st
+from .animations import AnimationManager
+import time
 
-class CourtroomProceedingAnimation:
+class CourtProceedingAnimations:
     def __init__(self):
-        self.phase_animations = {
-            'opening': self.animate_opening,
-            'examination': self.animate_examination,
-            'evidence': self.animate_evidence,
-            'objection': self.animate_objection,
-            'closing': self.animate_closing,
-            'judgment': self.animate_judgment
-        }
+        self.animation_manager = AnimationManager()
+
+    def gavel_animation(self):
+        """Displays a gavel animation effect."""
+        st.markdown(
+            """
+            <div style='text-align: center; font-size: 2em; animation: gavel 1s;'>
+                🔨
+            </div>
+            <style>
+                @keyframes gavel {
+                    0% { transform: rotate(0deg); }
+                    25% { transform: rotate(-20deg); }
+                    75% { transform: rotate(20deg); }
+                    100% { transform: rotate(0deg); }
+                }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        time.sleep(1)
+
+    def phase_transition_animation(self, from_phase: str, to_phase: str):
+        """Animates the transition between court phases."""
+        progress_text = f"Transitioning from {from_phase} to {to_phase}..."
+        self.animation_manager.progress_bar_animation(
+            progress_text,
+            duration=2.0,
+            on_complete=lambda: self.gavel_animation()
+        )
+
+    def evidence_presentation_animation(self, evidence_type: str):
+        """Displays an animation for evidence presentation."""
+        icon = "📄" if evidence_type == "document" else "🖼️" if evidence_type == "image" else "📹"
+        st.markdown(
+            f"""
+            <div style='text-align: center; animation: present 1s;'>
+                <div style='font-size: 3em;'>{icon}</div>
+                <div style='font-size: 1.2em; color: #e10600;'>Presenting {evidence_type}</div>
+            </div>
+            <style>
+                @keyframes present {{
+                    from {{ transform: scale(0.5); opacity: 0; }}
+                    to {{ transform: scale(1); opacity: 1; }}
+                }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        time.sleep(1.5)
+
+    def objection_animation(self, objection_type: str):
+        """Displays an objection animation with the specified type."""
+        st.markdown(
+            f"""
+            <div style='text-align: center; animation: objection 0.5s;'>
+                <div style='font-size: 2em; color: #e10600; font-weight: bold;'>
+                    OBJECTION!
+                </div>
+                <div style='font-size: 1.2em; color: #fff;'>
+                    {objection_type}
+                </div>
+            </div>
+            <style>
+                @keyframes objection {{
+                    0% {{ transform: scale(0.5); opacity: 0; }}
+                    50% {{ transform: scale(1.2); }}
+                    100% {{ transform: scale(1); opacity: 1; }}
+                }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        time.sleep(1)
+
+    def verdict_animation(self, verdict: str):
+        """Displays an animation for the court's verdict."""
+        icon = "⚖️"
+        color = "#4CAF50" if verdict.lower() == "accepted" else "#e10600"
         
-    def animate_opening(self, role):
-        """Animation for opening statements"""
-        st.markdown("""
-        <div class="opening-statement">
-            <h3>Opening Statements Phase</h3>
-            <p>Present your opening statement to the court. Explain your client's position and what you intend to prove.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    def animate_examination(self, role):
-        """Animation for witness examination"""
-        st.markdown("""
-        <style>
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-        .examination {
-            animation: slideIn 1s ease-out;
-            padding: 10px;
-            border-left: 4px solid #43A047;
-            background-color: #E8F5E9;
-        }
-        </style>
-        <div class="examination">
-            <h3>Witness Examination Phase</h3>
-            <p>Witnesses will now be called to testify and be examined by the lawyers.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    def animate_evidence(self, role):
-        """Animation for evidence presentation"""
-        st.markdown("""
-        <style>
-        @keyframes scaleIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
-        }
-        .evidence {
-            animation: scaleIn 1s ease-in-out;
-            padding: 10px;
-            border-left: 4px solid #FB8C00;
-            background-color: #FFF3E0;
-        }
-        </style>
-        <div class="evidence">
-            <h3>Evidence Presentation Phase</h3>
-            <p>The lawyers will now present and discuss key evidence in the case.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    def animate_objection(self, role):
-        """Animation for objections"""
-        st.markdown("""
-        <style>
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        .objection {
-            animation: pulse 0.5s infinite;
-            padding: 10px;
-            border-left: 4px solid #E53935;
-            background-color: #FFEBEE;
-        }
-        </style>
-        <div class="objection">
-            <h3>Objection Phase</h3>
-            <p>Lawyers may raise objections to evidence or testimony that violates legal procedures.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    def animate_closing(self, role):
-        """Animation for closing arguments"""
-        st.markdown("""
-        <style>
-        @keyframes slideInFromBottom {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .closing {
-            animation: slideInFromBottom 1s ease-out;
-            padding: 10px;
-            border-left: 4px solid #7B1FA2;
-            background-color: #F3E5F5;
-        }
-        </style>
-        <div class="closing">
-            <h3>Closing Arguments Phase</h3>
-            <p>The lawyers will now present their final arguments summarizing their case.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    def animate_judgment(self, role):
-        """Animation for judgment"""
-        st.markdown("""
-        <style>
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px gold; }
-            50% { box-shadow: 0 0 20px gold; }
-            100% { box-shadow: 0 0 5px gold; }
-        }
-        .judgment {
-            animation: glow 2s infinite;
-            padding: 10px;
-            border-left: 4px solid #FFC107;
-            background-color: #FFF8E1;
-        }
-        </style>
-        <div class="judgment">
-            <h3>Judgment Phase</h3>
-            <p>The judge will now deliver the final verdict based on the evidence and arguments presented.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    def animate_phase(self, phase, role=None):
-        """Select and run the appropriate animation for the current phase"""
-        if phase in self.phase_animations:
-            self.phase_animations[phase](role)
-        else:
-            st.write(f"Phase: {phase}") 
+        st.markdown(
+            f"""
+            <div style='text-align: center;'>
+                <div style='font-size: 3em; animation: verdict-icon 2s;'>{icon}</div>
+                <div style='font-size: 2em; color: {color}; animation: verdict-text 1s;'>
+                    {verdict.upper()}
+                </div>
+            </div>
+            <style>
+                @keyframes verdict-icon {{
+                    0% {{ transform: translateY(-50px); opacity: 0; }}
+                    100% {{ transform: translateY(0); opacity: 1; }}
+                }}
+                @keyframes verdict-text {{
+                    0% {{ transform: scale(0.8); opacity: 0; }}
+                    100% {{ transform: scale(1); opacity: 1; }}
+                }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        time.sleep(2)
+
+    def witness_transition_animation(self, witness_name: str):
+        """Displays an animation for witness transitions."""
+        st.markdown(
+            f"""
+            <div style='text-align: center;'>
+                <div style='font-size: 1.5em; color: #fff;'>
+                    Now calling to the stand
+                </div>
+                <div style='font-size: 2em; color: #e10600; margin-top: 10px; animation: witness 1s;'>
+                    {witness_name}
+                </div>
+            </div>
+            <style>
+                @keyframes witness {{
+                    from {{ transform: translateX(-100%); opacity: 0; }}
+                    to {{ transform: translateX(0); opacity: 1; }}
+                }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        time.sleep(1.5) 

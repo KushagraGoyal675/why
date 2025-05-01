@@ -8,11 +8,9 @@ class PlaintiffAgent(AgentBase):
     
     def generate_response(self, context: Dict[str, Any]) -> str:
         """Generate a response as the plaintiff"""
-        prompt = self._build_prompt(context)
+        prompt = f"You are the plaintiff's lawyer. Respond to this context: {context}"
         result = groq_api.generate_response(prompt)
-        if "error" in result:
-            return f"Error generating response: {result['error']}"
-        return result["response"]
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Response could not be generated.")
     
     def _build_prompt(self, context: Dict[str, Any]) -> str:
         """Build a prompt for the LLM based on the context"""
@@ -68,4 +66,32 @@ class PlaintiffAgent(AgentBase):
             "The plaintiff suffered financial losses due to the breach",
             "The defendant had no valid reason for non-performance",
             "The plaintiff is entitled to damages as per Section 73 of the Indian Contract Act"
-        ] 
+        ]
+    
+    def generate_opening_statement(self, case_data: Dict[str, Any]) -> str:
+        try:
+            prompt = f"""You are the plaintiff's lawyer in an Indian court. Write a persuasive opening statement for the following case:
+Case Details: {case_data}
+"""
+            result = groq_api.generate_response(prompt)
+            response = result.get("response", "")
+            if not response:
+                return "Your Honor, I am the plaintiff's lawyer. I will present evidence to support my client's case."
+            return response
+        except Exception as e:
+            print(f"Error generating opening statement: {str(e)}")
+            return "Your Honor, I am the plaintiff's lawyer. I will present evidence to support my client's case."
+    
+    def generate_question(self, witness: Dict[str, Any]) -> str:
+        prompt = f"""You are the plaintiff's lawyer. Write a strong examination question for this witness:
+Witness: {witness}
+"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Question could not be generated.")
+    
+    def generate_closing_argument(self, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are the plaintiff's lawyer. Write a compelling closing argument for this case:
+Case Details: {case_data}
+"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Closing argument could not be generated.") 

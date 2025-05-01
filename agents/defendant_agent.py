@@ -6,13 +6,51 @@ class DefendantAgent(AgentBase):
     def __init__(self, llm_provider: str = "Groq"):
         super().__init__("defendant", llm_provider)
     
-    def generate_response(self, context: Dict[str, Any]) -> str:
-        """Generate a response as the defendant"""
-        prompt = self._build_prompt(context)
+    def _generate_llm_response(self, prompt: str) -> str:
+        """Generate a response using the LLM provider"""
         result = groq_api.generate_response(prompt)
         if "error" in result:
             return f"Error generating response: {result['error']}"
         return result["response"]
+    
+    def _parse_analysis(self, analysis: str) -> Dict[str, Any]:
+        """Parse the LLM analysis into a structured format"""
+        try:
+            # Split the analysis into sections
+            sections = analysis.split('\n\n')
+            parsed_analysis = {}
+            
+            for section in sections:
+                if ':' in section:
+                    key, value = section.split(':', 1)
+                    parsed_analysis[key.strip()] = value.strip()
+                elif section.strip():
+                    # If no colon found, use the first line as key and rest as value
+                    lines = section.strip().split('\n')
+                    if lines:
+                        key = lines[0].strip()
+                        value = '\n'.join(lines[1:]).strip()
+                        parsed_analysis[key] = value
+            
+            return parsed_analysis
+        except Exception as e:
+            return {
+                "error": f"Error parsing analysis: {str(e)}",
+                "raw_analysis": analysis
+            }
+    
+    def _parse_arguments(self, arguments: str) -> List[str]:
+        """Parse the LLM arguments into a list"""
+        try:
+            # Split by newlines and filter out empty lines
+            return [arg.strip() for arg in arguments.split('\n') if arg.strip()]
+        except Exception as e:
+            return [f"Error parsing arguments: {str(e)}", arguments]
+    
+    def generate_response(self, context: Dict[str, Any]) -> str:
+        prompt = f"You are the defendant's lawyer. Respond to this context: {context}"
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Response could not be generated.")
     
     def analyze_case(self, case_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze the case from defendant's perspective"""
@@ -107,4 +145,19 @@ class DefendantAgent(AgentBase):
         Context: {context}
         Previous exchange: {previous_exchange}
         
-        Generate a professional and strategic response.""" 
+        Generate a professional and strategic response."""
+
+    def generate_opening_statement(self, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are the defendant's lawyer in an Indian court. Write a persuasive opening statement for the following case:\nCase Details: {case_data}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Opening statement could not be generated.")
+
+    def generate_question(self, witness: Dict[str, Any]) -> str:
+        prompt = f"""You are the defendant's lawyer. Write a strong cross-examination question for this witness:\nWitness: {witness}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Question could not be generated.")
+
+    def generate_closing_argument(self, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are the defendant's lawyer. Write a compelling closing argument for this case:\nCase Details: {case_data}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Closing argument could not be generated.") 

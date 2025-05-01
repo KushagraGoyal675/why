@@ -1,121 +1,256 @@
 {
     "cases": [
-        {
-            "case_id": "CIV-001",
-            "title": "Breach of Contract",
-            "description": "A dispute over a failed business agreement between two companies",
-            "case_type": "Civil",
-            "parties": {
-                "plaintiff": "ABC Enterprises",
-                "defendant": "XYZ Corporation"
-            },
-            "facts": "ABC Enterprises claims XYZ Corporation failed to deliver goods as per contract terms",
-            "evidence": [
-                {
-                    "id": "EVD-001",
-                    "type": "Document",
-                    "description": "Original Contract Agreement",
-                    "relevance": "Primary evidence of the agreement terms"
-                },
-                {
-                    "id": "EVD-002",
-                    "type": "Email",
-                    "description": "Communication regarding delivery delays",
-                    "relevance": "Shows awareness of breach"
-                }
-            ],
-            "witnesses": [
-                {
-                    "witness_id": "WIT-001",
-                    "name": "Mr. Ramesh Kumar",
-                    "role": "Plaintiff's Manager",
-                    "testimony": "I was responsible for overseeing the contract execution"
-                },
-                {
-                    "witness_id": "WIT-002",
-                    "name": "Ms. Priya Sharma",
-                    "role": "Defendant's Sales Head",
-                    "testimony": "I handled the client communication and order processing"
-                }
-            ]
+      {
+        "case_id": "CIV-001",
+        "title": "Breach of Contract",
+        "description": "A dispute over a failed business agreement between two companies",
+        "case_type": "Civil",
+        "parties": {
+          "plaintiff": "ABC Enterprises",
+          "defendant": "XYZ Corporation"
         },
-        {
-            "case_id": "CIV-002",
-            "title": "Property Dispute",
-            "description": "A dispute over land ownership between neighbors",
-            "case_type": "Civil",
-            "parties": {
-                "plaintiff": "Mr. Amit Patel",
-                "defendant": "Mr. Rajesh Mehta"
-            },
-            "facts": "Mr. Patel claims Mr. Mehta has encroached upon his property",
-            "evidence": [
-                {
-                    "id": "EVD-003",
-                    "type": "Document",
-                    "description": "Property Deed",
-                    "relevance": "Shows original property boundaries"
-                },
-                {
-                    "id": "EVD-004",
-                    "type": "Photograph",
-                    "description": "Current property status",
-                    "relevance": "Shows alleged encroachment"
-                }
-            ],
-            "witnesses": [
-                {
-                    "witness_id": "WIT-003",
-                    "name": "Mr. Sunil Verma",
-                    "role": "Land Surveyor",
-                    "testimony": "I conducted the official property survey"
-                },
-                {
-                    "witness_id": "WIT-004",
-                    "name": "Ms. Neha Gupta",
-                    "role": "Neighbor",
-                    "testimony": "I have lived in the area for 20 years"
-                }
-            ]
+        "facts": "ABC Enterprises claims XYZ Corporation failed to deliver goods as per contract terms",
+        "evidence": [
+          {
+            "id": "EVD-001",
+            "type": "Document",
+            "description": "Original Contract Agreement",
+            "relevance": "Primary evidence of the agreement terms"
+          },
+          {
+            "id": "EVD-002",
+            "type": "Email",
+            "description": "Communication regarding delivery delays",
+            "relevance": "Shows awareness of breach"
+          }
+        ],
+        "witnesses": [
+          {
+            "witness_id": "WIT-001",
+            "name": "Mr. Ramesh Kumar",
+            "role": "Plaintiff's Manager",
+            "testimony": "I was responsible for overseeing the contract execution"
+          },
+          {
+            "witness_id": "WIT-002",
+            "name": "Ms. Priya Sharma",
+            "role": "Defendant's Sales Head",
+            "testimony": "I handled the client communication and order processing"
+          }
+        ]
+      },
+      {
+        "case_id": "CIV-002",
+        "title": "Property Dispute",
+        "description": "A dispute over land ownership between neighbors",
+        "case_type": "Civil",
+        "parties": {
+          "plaintiff": "Mr. Amit Patel",
+          "defendant": "Mr. Rajesh Mehta"
         },
-        {
-            "case_id": "CIV-003",
-            "title": "Consumer Protection",
-            "description": "A consumer complaint against a defective product",
-            "case_type": "Civil",
-            "parties": {
-                "plaintiff": "Mr. Vikram Singh",
-                "defendant": "TechGadgets Ltd."
-            },
-            "facts": "Mr. Singh purchased a defective smartphone that caused injuries",
-            "evidence": [
-                {
-                    "id": "EVD-005",
-                    "type": "Document",
-                    "description": "Purchase Receipt",
-                    "relevance": "Proof of purchase"
-                },
-                {
-                    "id": "EVD-006",
-                    "type": "Medical Report",
-                    "description": "Injury documentation",
-                    "relevance": "Shows damages caused"
-                }
-            ],
-            "witnesses": [
-                {
-                    "witness_id": "WIT-005",
-                    "name": "Dr. Anil Kapoor",
-                    "role": "Medical Expert",
-                    "testimony": "I treated the injuries caused by the defective product"
-                },
-                {
-                    "witness_id": "WIT-006",
-                    "name": "Mr. Sameer Joshi",
-                    "role": "Product Safety Expert",
-                    "testimony": "I analyzed the product and found safety violations"
-                }
-            ]
-        }
+        "facts": "Mr. Patel claims Mr. Mehta has encroached upon his property",
+        "evidence": [
+          {
+            "id": "EVD-003",
+            "type": "Document",
+            "description": "Property Deed",
+            "relevance": "Shows original property boundaries"
+          },
+          {
+            "id": "EVD-004",
+            "type": "Photograph",
+            "description": "Current property status",
+            "relevance": "Shows alleged encroachment"
+          }
+        ],
+        "witnesses": [
+          {
+            "witness_id": "WIT-003",
+            "name": "Mr. Sunil Verma",
+            "role": "Land Surveyor",
+            "testimony": "I conducted the official property survey"
+          },
+          {
+            "witness_id": "WIT-004",
+            "name": "Ms. Neha Gupta",
+            "role": "Neighbor",
+            "testimony": "I have lived in the area for 20 years"
+          }
+        ]
+      },
+      {
+        "case_id": "CIV-003",
+        "title": "Consumer Protection",
+        "description": "A consumer complaint against a defective product",
+        "case_type": "Civil",
+        "parties": {
+          "plaintiff": "Mr. Vikram Singh",
+          "defendant": "TechGadgets Ltd."
+        },
+        "facts": "Mr. Singh purchased a defective smartphone that caused injuries",
+        "evidence": [
+          {
+            "id": "EVD-005",
+            "type": "Document",
+            "description": "Purchase Receipt",
+            "relevance": "Proof of purchase"
+          },
+          {
+            "id": "EVD-006",
+            "type": "Medical Report",
+            "description": "Injury documentation",
+            "relevance": "Shows damages caused"
+          }
+        ],
+        "witnesses": [
+          {
+            "witness_id": "WIT-005",
+            "name": "Dr. Anil Kapoor",
+            "role": "Medical Expert",
+            "testimony": "I treated the injuries caused by the defective product"
+          },
+          {
+            "witness_id": "WIT-006",
+            "name": "Mr. Sameer Joshi",
+            "role": "Product Safety Expert",
+            "testimony": "I analyzed the product and found safety violations"
+          }
+        ]
+      },
+      {
+        "case_id": "CIV-004",
+        "title": "Oil and Natural Gas Commission vs M.B. Patel & Co.",
+        "description": "A civil dispute concerning breach of contract and arbitration award enforcement.",
+        "case_type": "Civil",
+        "parties": {
+          "plaintiff": "Oil and Natural Gas Commission (O.N.G.C.)",
+          "defendant": "M.B. Patel & Co."
+        },
+        "facts": "ONGC awarded a reconditioning contract to the contractor M.B. Patel & Co. Delays occurred due to ONGC's failure to supply materials, followed by a dispute when the contractor refused to continue work and demanded compensation. The matter was taken to arbitration, and a lumpsum award was granted to the contractor, which ONGC challenged in court.",
+        "evidence": [
+          {
+            "id": "EVD-007",
+            "type": "Contract",
+            "description": "Original reconditioning work agreement",
+            "relevance": "Establishes the terms under which the dispute arose"
+          },
+          {
+            "id": "EVD-008",
+            "type": "Correspondence",
+            "description": "Letters from ONGC requesting continuation of work",
+            "relevance": "Relevant to the issue of abandonment or refusal by the contractor"
+          },
+          {
+            "id": "EVD-009",
+            "type": "Arbitration Award",
+            "description": "Award dated 3-5-1985 by Umpire V.M. Patel",
+            "relevance": "Central to the appeal and the basis of the judgment under scrutiny"
+          }
+        ],
+        "witnesses": [
+          {
+            "witness_id": "WIT-007",
+            "name": "Shri A.R. Mehta",
+            "role": "Plaintiff's Counsel",
+            "testimony": "Argued that the award was against the terms of the contract and the umpire acted beyond jurisdiction"
+          },
+          {
+            "witness_id": "WIT-008",
+            "name": "Shri V.M. Patel",
+            "role": "Arbitration Umpire",
+            "testimony": "Rendered a lump-sum award without specifying breakdown per claim head"
+          }
+        ]
+      },
+      {
+        "case_id": "CIV-005",
+        "title": "Union of India vs Raman Iron Foundry",
+        "description": "A dispute over contractual breach and interim injunction concerning appropriation of payments under government supply contracts.",
+        "case_type": "Civil",
+        "parties": {
+          "plaintiff": "Union of India",
+          "defendant": "Raman Iron Foundry"
+        },
+        "facts": "A contractual dispute arose over supply delays. The Union of India claimed damages and sought to recover them from pending payments due under other contracts. Raman Iron Foundry disputed the claim and filed for arbitration and an injunction to restrain recovery.",
+        "evidence": [
+          {
+            "id": "EVD-010",
+            "type": "Contract",
+            "description": "Standard Form Contract No. D.G.S. & D. 68",
+            "relevance": "Defines Clause 18 and Clause 24 governing dispute resolution and recovery rights"
+          },
+          {
+            "id": "EVD-011",
+            "type": "Correspondence",
+            "description": "Letter dated 30 March 1971 from Assistant Director of Supplies",
+            "relevance": "Details ONGC’s intent to recover damages from pending bills"
+          },
+          {
+            "id": "EVD-012",
+            "type": "Court Order",
+            "description": "Delhi High Court interim injunction",
+            "relevance": "Restrains Union of India from recovering damages through appropriation"
+          }
+        ],
+        "witnesses": [
+          {
+            "witness_id": "WIT-009",
+            "name": "Justice Avadh Bihari",
+            "role": "Delhi High Court Judge",
+            "testimony": "Ruled that Clause 18 did not permit recovery of unadjudicated claims"
+          },
+          {
+            "witness_id": "WIT-010",
+            "name": "P.N. Bhagwati",
+            "role": "Supreme Court Judge",
+            "testimony": "Delivered the judgment affirming that Clause 18 applies only to admitted or adjudicated dues"
+          }
+        ]
+      },
+      {
+        "case_id": "CIV-006",
+        "title": "Mercator Oil and Gas Limited vs ONGC Limited and Anr",
+        "description": "A contractual dispute concerning invocation of bank guarantees and termination of a contract for offshore oil infrastructure conversion.",
+        "case_type": "Civil",
+        "parties": {
+          "plaintiff": "Mercator Oil and Gas Limited",
+          "defendant": "ONGC Limited"
+        },
+        "facts": "Mercator, part of a consortium including MOPPL and GPC, was awarded a contract by ONGC to convert the vessel 'Sagar Samrat' into a mobile offshore production unit. Due to project delays, ONGC invoked bank guarantees alleging non-performance. Mercator filed a petition under Section 9 of the Arbitration Act seeking injunction on encashment of bank guarantees, alleging fraud, undue hardship, and collusion between ONGC and GPC.",
+        "evidence": [
+          {
+            "id": "EVD-013",
+            "type": "Contract",
+            "description": "Original consortium contract with ONGC dated 15 December 2011",
+            "relevance": "Establishes the terms of the agreement and performance obligations"
+          },
+          {
+            "id": "EVD-014",
+            "type": "Bank Guarantees",
+            "description": "Performance and advance payment guarantees totaling Rs. 35.875 crores",
+            "relevance": "Central to the injunction sought under Section 9"
+          },
+          {
+            "id": "EVD-015",
+            "type": "Correspondence",
+            "description": "Termination notice and invocation letters dated 25 September 2018",
+            "relevance": "Basis for Mercator’s allegation of bad faith and fraud"
+          }
+        ],
+        "witnesses": [
+          {
+            "witness_id": "WIT-011",
+            "name": "Mr. Janak Dwarkadas",
+            "role": "Senior Counsel for Petitioner",
+            "testimony": "Argued that invocation was fraudulent and that project delays were excusable due to force majeure and ONGC’s own conduct"
+          },
+          {
+            "witness_id": "WIT-012",
+            "name": "Mr. Prasanna Kumar Gangisetty",
+            "role": "ONGC Representative",
+            "testimony": "Stated that the guarantees were unconditional and invoked properly due to petitioner’s failure to meet contractual obligations"
+          }
+        ]
+      }
     ]
-}
+  }

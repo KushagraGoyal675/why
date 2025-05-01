@@ -1,5 +1,6 @@
 from typing import Dict, Any, List
 from .agent_base import AgentBase
+from llm.groq_api import groq_api
 
 class WitnessAgent(AgentBase):
     def __init__(self, llm_provider: str = "Groq"):
@@ -8,10 +9,30 @@ class WitnessAgent(AgentBase):
         self.background = ""
         self.credibility = 0.8  # Default credibility score
     
+    def generate_opening_statement(self, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are a witness in an Indian court. Briefly introduce yourself and your relevance to this case:\nCase Details: {case_data}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Opening statement could not be generated.")
+
+    def generate_question(self, context: Dict[str, Any]) -> str:
+        prompt = f"""You are a witness. What question would you expect to be asked in this context?\nContext: {context}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Question could not be generated.")
+
+    def generate_closing_argument(self, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are a witness. Summarize your testimony and its importance for this case:\nCase Details: {case_data}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Closing summary could not be generated.")
+
     def generate_response(self, context: Dict[str, Any]) -> str:
-        """Generate a response as the witness"""
-        prompt = self._build_prompt(context)
-        return self._generate_llm_response(prompt)
+        prompt = f"You are a witness in court. Respond to this context: {context}"
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Response could not be generated.")
+
+    def give_testimony(self, question: str, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are a witness in an Indian court. Answer the following question truthfully, based on your knowledge and the case details.\nQuestion: {question}\nCase Details: {case_data}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Testimony could not be generated.")
     
     def analyze_case(self, case_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze the case from witness's perspective"""
@@ -87,7 +108,7 @@ class WitnessAgent(AgentBase):
         
         Format the response as a structured analysis."""
         
-        analysis = self._generate_llm_response(prompt)
+        analysis = groq_api.generate_response(prompt)
         return self._parse_analysis(analysis)
     
     def prepare_for_examination(self, case_context: Dict[str, Any]) -> Dict[str, Any]:
@@ -108,7 +129,7 @@ class WitnessAgent(AgentBase):
         
         Format the response as preparation guidelines."""
         
-        preparation = self._generate_llm_response(prompt)
+        preparation = groq_api.generate_response(prompt)
         return self._parse_preparation(preparation)
     
     def _assess_background_relevance(self, case_data: Dict[str, Any]) -> Dict[str, Any]:

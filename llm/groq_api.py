@@ -2,16 +2,14 @@
 
 from typing import Dict, Any
 from groq import Groq
+from api_keys import GROQ_API_KEY
 
 class GroqAPI:
     def __init__(self):
-        # Directly define the API key here
-        self.api_key = "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"  # <-- Replace with your actual Groq API key
-
-        if not self.api_key or self.api_key == "YOUR_GROQ_API_KEY_HERE":
-            raise ValueError("Please set your GROQ_API_KEY in groq_api.py")
+        if not GROQ_API_KEY or GROQ_API_KEY == "YOUR_GROQ_API_KEY_HERE":
+            raise ValueError("Please set your GROQ_API_KEY in api_keys.py")
         
-        self.client = Groq(api_key=self.api_key)
+        self.client = Groq(api_key=GROQ_API_KEY)
     
     def generate_response(self, prompt: str, model: str = "llama-3.3-70b-versatile") -> Dict[str, Any]:
         try:
@@ -33,6 +31,7 @@ class GroqAPI:
                 "usage": completion.usage
             }
         except Exception as e:
+            print(f"Error in Groq API call: {str(e)}")
             return {
                 "error": str(e),
                 "response": None
@@ -40,3 +39,9 @@ class GroqAPI:
 
 # Global instance
 groq_api = GroqAPI()
+
+if __name__ == "__main__":
+    # Test the API
+    test_prompt = "What is the role of a judge in an Indian court?"
+    result = groq_api.generate_response(test_prompt)
+    print(f"Test response: {result}")

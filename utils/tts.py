@@ -12,47 +12,80 @@ import pygame
 
 class TTSEngine:
     def __init__(self):
-        self.temp_dir = tempfile.mkdtemp()
-        self.voice_settings = {
-            "judge": {"language": "en", "slow": False},
-            "lawyer": {"language": "en", "slow": False},
-            "witness": {"language": "en", "slow": False},
-            "clerk": {"language": "en", "slow": False}
-        }
-        pygame.mixer.init()
+        try:
+            self.temp_dir = tempfile.mkdtemp()
+            self.voice_settings = {
+                "judge": {"language": "en", "slow": False},
+                "plaintiff": {"language": "en", "slow": False},
+                "defendant": {"language": "en", "slow": False},
+                "witness": {"language": "en", "slow": False}
+            }
+            pygame.mixer.init()
+            print("TTSEngine initialized successfully")
+        except Exception as e:
+            print(f"Error initializing TTSEngine: {str(e)}")
+            raise
 
     def generate_tts(self, text: str, role: str = "judge", language: str = "en") -> str:
         """Generate TTS audio for the given text"""
         try:
-            settings = self.voice_settings.get(role, self.voice_settings["judge"])
-            tts = gTTS(text=text, lang=language, slow=settings["slow"])
+            print(f"Generating TTS for role: {role}, language: {language}")
+            print(f"Text length: {len(text)}")
+            
+            settings = self.voice_settings.get(role, {"language": language, "slow": False})
+            print(f"Using settings: {settings}")
+            
+            tts = gTTS(text=text, lang=settings["language"], slow=settings["slow"])
             
             # Save to temporary file
             filename = f"tts_{role}_{hash(text)}.mp3"
             filepath = os.path.join(self.temp_dir, filename)
+            print(f"Saving to: {filepath}")
+            
             tts.save(filepath)
+            print("TTS file saved successfully")
             
             return filepath
         except Exception as e:
             print(f"Error generating TTS: {str(e)}")
+            print(f"Error type: {type(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
             return None
 
     def play_audio(self, filepath: str) -> bool:
         """Play the generated audio file"""
         try:
+            print(f"Playing audio from: {filepath}")
             pygame.mixer.music.load(filepath)
             pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                time.sleep(0.1)
+            print("Audio playback completed")
             return True
         except Exception as e:
             print(f"Error playing audio: {str(e)}")
+            print(f"Error type: {type(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
             return False
 
     def speak(self, text: str, role: str = "judge", language: str = "en") -> bool:
         """Generate and play TTS audio for the given text."""
-        filepath = self.generate_tts(text, role=role, language=language)
-        if filepath:
-            return self.play_audio(filepath)
-        return False
+        try:
+            print(f"Speaking text for role: {role}")
+            print(f"Text: {text[:100]}...")  # Print first 100 chars
+            
+            filepath = self.generate_tts(text, role=role, language=language)
+            if filepath:
+                return self.play_audio(filepath)
+            return False
+        except Exception as e:
+            print(f"Error in speak method: {str(e)}")
+            print(f"Error type: {type(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            return False
 
     def cleanup(self):
         """Clean up temporary files"""

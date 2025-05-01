@@ -2,21 +2,37 @@
 
 from typing import Dict, Any, List
 from .agent_base import AgentBase
+from llm.groq_api import groq_api
 
 class JudgeAgent(AgentBase):
-    def __init__(self, llm_provider: str = "Groq"):
+    def __init__(self, config: Dict[str, Any] = None, llm_provider: str = "Groq"):
         super().__init__("judge", llm_provider)
-        self.config = {
+        self.config = config or {
             "name": "Justice Rao",
             "experience": "20 years",
             "specialization": "Civil Law"
         }
     
+    def generate_opening_statement(self, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are the presiding judge. Write a brief opening address to the court for this case:\nCase Details: {case_data}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Opening address could not be generated.")
+
+    def generate_question(self, context: Dict[str, Any]) -> str:
+        prompt = f"""You are the presiding judge. Write a clarifying question for the current phase/context:\nContext: {context}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Question could not be generated.")
+
+    def generate_closing_argument(self, case_data: Dict[str, Any]) -> str:
+        prompt = f"""You are the presiding judge. Summarize the closing arguments for this case:\nCase Details: {case_data}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Closing summary could not be generated.")
+
     def generate_response(self, context: Dict[str, Any]) -> str:
-        """Generate a response as the judge"""
-        prompt = self._build_prompt(context)
-        return self._generate_llm_response(prompt)
-    
+        prompt = f"You are the presiding judge. Respond to this context: {context}"
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Response could not be generated.")
+
     def analyze_case(self, case_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze the case from judge's perspective"""
         return {
@@ -38,29 +54,42 @@ class JudgeAgent(AgentBase):
         ]
     
     def rule_on_objection(self, objection: str) -> str:
-        """Rule on an objection raised in court"""
-        context = {
-            "phase": "objection",
-            "objection": objection,
-            "previous_exchange": ""
-        }
-        return self.generate_response(context)
+        prompt = f"You are the presiding judge. Rule on this objection: {objection}"
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Objection ruling could not be generated.")
         
     def give_judgment(self, case_summary: str) -> str:
-        """Provide final judgment on the case"""
-        context = {
-            "phase": "judgment",
-            "case_summary": case_summary,
-            "previous_exchange": ""
-        }
-        return self.generate_response(context)
+        prompt = f"You are the presiding judge. Deliver your final judgment for this case:\nCase Summary: {case_summary}\n"""
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Judgment could not be generated.")
+    
+    def comment_on_statement(self, statement: str) -> str:
+        prompt = f"You are the presiding judge. Comment on this statement: {statement}"
+        result = groq_api.generate_response(prompt)
+        return result.get("response", f"[LLM Error: {result.get('error', 'Unknown error')}] Comment could not be generated.")
     
     def _build_prompt(self, context: Dict[str, Any]) -> str:
         """Build a detailed prompt for the judge's response"""
         phase = context.get("phase", "")
         previous_exchange = context.get("previous_exchange", "")
         
-        if phase == "objection":
+        if phase == "comment":
+            statement = context.get("statement", "")
+            return f"""As the presiding judge, comment on this statement:
+            Statement: {statement}
+            
+            Previous Exchange: {previous_exchange}
+            
+            Guidelines for your comment:
+            1. Evaluate the relevance of the statement
+            2. Consider its impact on the proceedings
+            3. Maintain impartiality
+            4. Guide the proceedings if necessary
+            5. Keep comments brief and constructive
+            
+            Generate a professional and appropriate comment."""
+            
+        elif phase == "objection":
             objection = context.get("objection", "")
             return f"""As the presiding judge, rule on this objection:
             Objection: {objection}
