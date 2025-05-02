@@ -7,8 +7,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import base64
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import Dict, Any
+import requests
+from bs4 import BeautifulSoup
+import urllib.parse
 # from frontend import CourtroomFrontend
 from frontend.components import CourtroomUI
 from frontend.animations import AnimationManager
@@ -20,7 +23,6 @@ from agents.judge_agent import JudgeAgent
 from agents.witness_agent import WitnessAgent
 from utils.tts import TTSEngine
 from utils.stt import STTEngine
-from io import StringIO
 
 # Must be called before any other Streamlit commands
 st.set_page_config(
@@ -100,6 +102,53 @@ if 'transcript' in st.session_state and st.session_state['transcript']:
         file_name="courtroom_transcript.txt",
         mime="text/plain"
     )
+
+# --- Legal Research Section in Sidebar ---
+st.sidebar.markdown("---")
+st.sidebar.header("📚 Legal Research")
+
+def search_indiankanoon(case_name, year="", max_results=5):
+    query = f"{case_name} {year} site:indiankanoon.org"
+    encoded_query = urllib.parse.quote_plus(query)
+    search_url = f"https://html.duckduckgo.com/html/?q={encoded_query}"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Version/13.1.2 Safari/537.36"
+    }
+
+    try:
+        response = requests.get(search_url, headers=headers)
+        response.raise_for_status()
+    except Exception as e:
+        st.sidebar.error(f"Error fetching search results: {e}")
+        return None
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    results = soup.find_all("a", class_="result__a", limit=max_results)
+    
+    if not results:
+        st.sidebar.warning(f"No results found for '{case_name}' in {year}.")
+        return None
+
+    return results
+
+# Case Law Search Form
+with st.sidebar.form("case_law_search"):
+    case_name = st.text_input("🔍 Case Name", placeholder="e.g., Keshavananda Bharati")
+    year = st.text_input("📅 Year (Optional)", placeholder="e.g., 1973")
+    max_results = st.slider("Max Results", min_value=1, max_value=10, value=5)
+    search_submitted = st.form_submit_button("Search Case Law")
+
+if search_submitted and case_name:
+    with st.sidebar:
+        with st.spinner("Searching Indian Kanoon..."):
+            results = search_indiankanoon(case_name, year, max_results)
+            if results:
+                st.success(f"Found {len(results)} results")
+                for i, link in enumerate(results, 1):
+                    title = link.get_text()
+                    url = link['href']
+                    st.markdown(f"{i}. [{title}]({url})")
 
 # --- HISTORY TRACKING FOR UNDO ---
 def save_history():
@@ -221,8 +270,8 @@ st.markdown(
     }
     .stMarkdown {
         color: #fff !important;
-    }
-    .opening-statement {
+        }
+        .opening-statement {
         background-color: #111 !important;
         color: #e10600 !important;
         border-left: 4px solid #e10600 !important;
@@ -244,8 +293,8 @@ st.markdown(
     }
     .phase-transition div.active {
         background-color: #4CAF50 !important;
-    }
-    </style>
+        }
+        </style>
     ''', unsafe_allow_html=True)
 
 # Initialize TTS and STT engines
@@ -317,19 +366,59 @@ def get_case_by_id(case_id):
 # --- Case Selection ---
 if 'selected_case_id' not in st.session_state:
     st.session_state.selected_case_id = None
-if not st.session_state.selected_case_id:
+if 'custom_case' not in st.session_state:
+    st.session_state.custom_case = None
+if not st.session_state.selected_case_id and not st.session_state.custom_case:
     st.subheader("Select a Case")
     cases = load_cases_from_json()
-    if not cases:
-        st.stop()
     case_titles = [f"{case['case_id']}: {case['title']}" for case in cases]
+    case_titles.append("➕ Create New Case")
     case_choice = st.selectbox("Choose a case", case_titles)
-    if st.button("Confirm Case"):
+    if case_choice == "➕ Create New Case":
+        st.markdown("### Create Your Own Case")
+        with st.form("create_case_form"):
+            title = st.text_input("Case Title")
+            case_type = st.selectbox("Case Type", ["Contract Dispute", "Property Dispute", "Family Law", "Consumer Protection", "Commercial Dispute", "Tort Claim", "Injunction Suit", "Specific Performance", "Other"])
+            plaintiff = st.text_input("Plaintiff Name")
+            defendant = st.text_input("Defendant Name")
+            description = st.text_area("Case Description")
+            witnesses_raw = st.text_area("Witnesses (one per line, format: Name:Role:Statement)")
+            evidence_raw = st.text_area("Evidence (one per line)")
+            submitted = st.form_submit_button("Create Case")
+        if submitted:
+            witnesses = []
+            for line in witnesses_raw.splitlines():
+                parts = line.split(":")
+                if len(parts) >= 2:
+                    witness = {"name": parts[0].strip(), "role": parts[1].strip()}
+                    if len(parts) > 2:
+                        witness["statement"] = ":".join(parts[2:]).strip()
+                    witnesses.append(witness)
+            evidence = [e.strip() for e in evidence_raw.splitlines() if e.strip()]
+            custom_case = {
+                "case_id": "custom",
+                "title": title,
+                "case_type": case_type,
+                "parties": {"plaintiff": plaintiff, "defendant": defendant},
+                "description": description,
+                "witnesses": witnesses,
+                "evidence": evidence
+            }
+            st.session_state.custom_case = custom_case
+            st.success("Custom case created! Proceeding to role selection...")
+            time.sleep(1)
+            st.rerun()
+        st.stop()
+    if st.button("Confirm Case") and case_choice != "➕ Create New Case":
         st.session_state.selected_case_id = case_choice.split(':')[0]
         st.rerun()
     st.stop()
 
-case = get_case_by_id(st.session_state.selected_case_id)
+# Case selection logic
+if 'custom_case' in st.session_state and st.session_state.custom_case:
+    case = st.session_state.custom_case
+else:
+    case = get_case_by_id(st.session_state.selected_case_id)
 
 # --- Role Selection ---
 roles = ["Plaintiff Lawyer", "Defendant Lawyer", "Observer"]
@@ -449,6 +538,9 @@ if st.session_state.selected_role == "Observer":
             plaintiff_statement = sim.plaintiff_agent.generate_opening_statement(case)
             sim.add_to_transcript("Plaintiff Lawyer", plaintiff_statement)
             st.session_state.current_speaker = "plaintiff"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble plaintiff">{plaintiff_statement}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("plaintiff", plaintiff_statement)
             time.sleep(2)
             st.session_state.opening_done = 'plaintiff'
@@ -457,6 +549,9 @@ if st.session_state.selected_role == "Observer":
             defendant_statement = sim.defendant_agent.generate_opening_statement(case)
             sim.add_to_transcript("Defendant Lawyer", defendant_statement)
             st.session_state.current_speaker = "defendant"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble defendant">{defendant_statement}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("defendant", defendant_statement)
             time.sleep(2)
             st.session_state.opening_done = 'done'
@@ -473,6 +568,9 @@ if st.session_state.selected_role == "Observer":
             question = sim.plaintiff_agent.generate_question(witness)
             sim.add_to_transcript("Plaintiff Lawyer", question)
             st.session_state.current_speaker = "plaintiff"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble plaintiff">{question}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("plaintiff", question)
             time.sleep(2)
             st.session_state.examination_done = 'plaintiff_q'
@@ -484,6 +582,9 @@ if st.session_state.selected_role == "Observer":
             answer = sim.witness_agent.give_testimony(question, case)
             sim.add_to_transcript("Witness", answer)
             st.session_state.current_speaker = "witness"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble witness">{answer}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("witness", answer)
             time.sleep(2)
             st.session_state.examination_done = 'done'
@@ -501,6 +602,9 @@ if st.session_state.selected_role == "Observer":
             cross_question = sim.defendant_agent.generate_question(witness)
             sim.add_to_transcript("Defendant Lawyer", cross_question)
             st.session_state.current_speaker = "defendant"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble defendant">{cross_question}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("defendant", cross_question)
             time.sleep(2)
             st.session_state.cross_done = 'defendant_q'
@@ -512,6 +616,9 @@ if st.session_state.selected_role == "Observer":
             answer = sim.witness_agent.give_testimony(cross_question, case)
             sim.add_to_transcript("Witness", answer)
             st.session_state.current_speaker = "witness"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble witness">{answer}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("witness", answer)
             time.sleep(2)
             st.session_state.cross_done = 'done'
@@ -525,35 +632,51 @@ if st.session_state.selected_role == "Observer":
     elif phase == 'evidence':
         st.info("AI agents are presenting evidence...")
         evidence_list = case["evidence"]
+        
         if not st.session_state.get('evidence_done', False):
+            # Initialize evidence tracking if not already done
             if 'evidence_index' not in st.session_state:
                 st.session_state.evidence_index = 0
                 st.session_state.evidence_side = 'plaintiff'
-            if st.session_state.evidence_side == 'plaintiff' and st.session_state.evidence_index < len(evidence_list):
-                evidence = evidence_list[st.session_state.evidence_index]
-                sim.add_to_transcript("Plaintiff Lawyer", f"Presenting evidence: {evidence}")
-                st.session_state.current_speaker = "plaintiff"
-                play_tts("plaintiff", str(evidence))
-                time.sleep(2)
-                st.session_state.evidence_index += 1
-                st.rerun()
-            elif st.session_state.evidence_side == 'plaintiff':
-                st.session_state.evidence_index = 0
-                st.session_state.evidence_side = 'defendant'
-                st.rerun()
-            elif st.session_state.evidence_side == 'defendant' and st.session_state.evidence_index < len(evidence_list):
-                evidence = evidence_list[st.session_state.evidence_index]
-                sim.add_to_transcript("Defendant Lawyer", f"Presenting evidence: {evidence}")
-                st.session_state.current_speaker = "defendant"
-                play_tts("defendant", str(evidence))
-                time.sleep(2)
-                st.session_state.evidence_index += 1
-                st.rerun()
-            else:
-                st.session_state.evidence_done = True
-                st.session_state.evidence_index = 0
-                st.session_state.evidence_side = 'plaintiff'
-                st.rerun()
+            
+            # Plaintiff's evidence presentation
+            if st.session_state.evidence_side == 'plaintiff':
+                if st.session_state.evidence_index < len(evidence_list):
+                    evidence = evidence_list[st.session_state.evidence_index]
+                    evidence_text = f"Presenting evidence: {evidence}"
+                    sim.add_to_transcript("Plaintiff Lawyer", evidence_text)
+                    st.session_state.current_speaker = "plaintiff"
+                    # Show transcript first
+                    st.markdown(f'<div class="chat-bubble plaintiff">{evidence_text}</div>', unsafe_allow_html=True)
+                    time.sleep(1)  # Give time to read
+                    play_tts("plaintiff", str(evidence))
+                    time.sleep(2)
+                    st.session_state.evidence_index += 1
+                    st.rerun()
+                else:
+                    st.session_state.evidence_index = 0
+                    st.session_state.evidence_side = 'defendant'
+                    st.rerun()
+            
+            # Defendant's evidence presentation
+            elif st.session_state.evidence_side == 'defendant':
+                if st.session_state.evidence_index < len(evidence_list):
+                    evidence = evidence_list[st.session_state.evidence_index]
+                    evidence_text = f"Presenting evidence: {evidence}"
+                    sim.add_to_transcript("Defendant Lawyer", evidence_text)
+                    st.session_state.current_speaker = "defendant"
+                    # Show transcript first
+                    st.markdown(f'<div class="chat-bubble defendant">{evidence_text}</div>', unsafe_allow_html=True)
+                    time.sleep(1)  # Give time to read
+                    play_tts("defendant", str(evidence))
+                    time.sleep(2)
+                    st.session_state.evidence_index += 1
+                    st.rerun()
+                else:
+                    st.session_state.evidence_done = True
+                    st.session_state.evidence_index = 0
+                    st.session_state.evidence_side = 'plaintiff'
+                    st.rerun()
         else:
             st.session_state.current_phase = next_phase(phase)
             st.session_state.evidence_done = False
@@ -565,16 +688,22 @@ if st.session_state.selected_role == "Observer":
             objection = "Objection, leading the witness!"
             sim.add_to_transcript("Defendant Lawyer", objection)
             st.session_state.current_speaker = "defendant"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble defendant">{objection}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("defendant", objection)
             time.sleep(2)
             st.session_state.objection_done = 'raised'
-            st.session_state.objection_text = objection  # Store objection in session state
+            st.session_state.objection_text = objection
             st.rerun()
         elif st.session_state.objection_done == 'raised':
             objection = st.session_state.get('objection_text', '')
             ruling = sim.judge_agent.rule_on_objection(objection)
             sim.add_to_transcript("Judge", ruling)
             st.session_state.current_speaker = "judge"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble judge">{ruling}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("judge", ruling)
             time.sleep(2)
             st.session_state.objection_done = 'done'
@@ -591,6 +720,9 @@ if st.session_state.selected_role == "Observer":
             closing1 = sim.plaintiff_agent.generate_closing_argument(case)
             sim.add_to_transcript("Plaintiff Lawyer", closing1)
             st.session_state.current_speaker = "plaintiff"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble plaintiff">{closing1}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("plaintiff", closing1)
             time.sleep(2)
             st.session_state.closing_done = 'plaintiff'
@@ -599,6 +731,9 @@ if st.session_state.selected_role == "Observer":
             closing2 = sim.defendant_agent.generate_closing_argument(case)
             sim.add_to_transcript("Defendant Lawyer", closing2)
             st.session_state.current_speaker = "defendant"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble defendant">{closing2}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("defendant", closing2)
             time.sleep(2)
             st.session_state.closing_done = 'done'
@@ -614,6 +749,9 @@ if st.session_state.selected_role == "Observer":
             judgment = sim.judge_agent.give_judgment(str(case))
             sim.add_to_transcript("Judge", judgment)
             st.session_state.current_speaker = "judge"
+            # Show transcript first
+            st.markdown(f'<div class="chat-bubble judge">{judgment}</div>', unsafe_allow_html=True)
+            time.sleep(1)  # Give time to read
             play_tts("judge", judgment)
             time.sleep(2)
             st.session_state.judgment_done = True
@@ -625,12 +763,12 @@ if st.session_state.selected_role == "Observer":
     elif phase == 'completed':
         st.success("Case closed. Justice served!")
         st.session_state.current_speaker = None
-else:
-    st.warning("For the extreme AI simulation, only Observer mode is currently supported. Please restart and select Observer.")
-
+    else:
+        st.warning("For the extreme AI simulation, only Observer mode is currently supported. Please restart and select Observer.")
+        
 # Footer
 st.markdown("""
 <div style="text-align:center; margin-top:50px; padding:20px; border-top:1px solid #333;">
     <p style="color:#666;">Indian Court Simulator - Educational Tool © 2024</p>
 </div>
-""", unsafe_allow_html=True) 
+""", unsafe_allow_html=True)
