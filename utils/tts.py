@@ -13,6 +13,11 @@ import pygame
 class TTSEngine:
     def __init__(self):
         try:
+            # Use dummy audio driver if specified
+            if os.environ.get("SDL_AUDIODRIVER") == "dummy":
+                print("Using dummy audio driver for pygame.")
+            pygame.mixer.init()
+            self.audio_available = True
             self.temp_dir = tempfile.mkdtemp()
             self.voice_settings = {
                 "judge": {"language": "en", "slow": False},
@@ -20,11 +25,10 @@ class TTSEngine:
                 "defendant": {"language": "en", "slow": False},
                 "witness": {"language": "en", "slow": False}
             }
-            pygame.mixer.init()
             print("TTSEngine initialized successfully")
         except Exception as e:
             print(f"Error initializing TTSEngine: {str(e)}")
-            raise
+            self.audio_available = False
 
     def generate_tts(self, text: str, role: str = "judge", language: str = "en") -> str:
         """Generate TTS audio for the given text"""
